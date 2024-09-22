@@ -19,7 +19,8 @@ android {
         targetSdkVersion 32
         versionCode 14
         versionName "1.0.0"
-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+//        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        testInstrumentationRunner "io.qameta.allure.android.runners.AllureAndroidJUnitRunner"
     }
 
     compileOptions {
@@ -62,7 +63,7 @@ dependencies {
     def hilt_version = '2.40.5'
     def gson_version = '2.9.0'
     def swipe_refresh_version = '1.1.0'
-    def androidx_test_espresso = '3.5.1'
+    def androidx_test_espresso = '3.5.0-alpha07'
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
@@ -95,13 +96,19 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.hamcrest:hamcrest-library:2.2'
+
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test:rules:1.5.0'
     androidTestImplementation 'androidx.test:runner:1.5.2'
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidx_test_espresso"
     androidTestImplementation "androidx.test.espresso:espresso-intents:$androidx_test_espresso"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$androidx_test_espresso"
-    implementation "androidx.test.espresso:espresso-idling-resource:$androidx_test_espresso"
+    androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$androidx_test_espresso"
     androidTestImplementation 'io.qameta.allure:allure-kotlin-android:2.4.0'
+    androidTestImplementation 'io.qameta.allure:allure-kotlin-junit4:2.4.0'
+    androidTestImplementation "io.qameta.allure:allure-kotlin-model:2.4.0"
+    androidTestImplementation "io.qameta.allure:allure-kotlin-commons:2.4.0"
+    androidTestImplementation 'org.hamcrest:hamcrest-library:2.2'
 
 }

@@ -19,16 +19,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.ViewInteraction;
+
+import junit.framework.AssertionFailedError;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.IsInstanceOf;
 
+import io.qameta.allure.kotlin.Step;
 import ru.iteco.fmhandroid.R;
 
 public class AuthUtils {
+
+    WaitingUtils waitingUtils = new WaitingUtils();
 
     ViewInteraction loginTextInput = onView(allOf(withHint("Login"),
             withParent(withParent(withId(R.id.login_text_input_layout)))));
@@ -57,30 +63,67 @@ public class AuthUtils {
 
     ViewInteraction pageAuthorization = onView(allOf(withText("Authorization")));
 
+    @Step("Выполняем вход с данными по умолчанию")
+    public void login() {
+        try {
+            waitingUtils.waiting(5000);
+
+            enterLogin("login2");
+            enterPassword("password2");
+            clickSignInButton();
+        } catch (NoMatchingViewException | AssertionFailedError e) {
+            System.out.println("iconLogOut не найден. Пропустить.");
+        }
+    }
+
+    @Step("Выполняем вход с логином: {0} и паролем: {1}")
     public void login(String login, String password) {
+        try {
+            waitingUtils.waiting(5000);
+
+            enterLogin(login);
+            enterPassword(password);
+            clickSignInButton();
+        } catch (NoMatchingViewException | AssertionFailedError e) {
+            System.out.println("iconLogOut не найден. Пропустить.");
+        }
+    }
+
+    @Step("Выполняем выход из аккаунта")
+    public void logout() {
+        try {
+            waitingUtils.waiting(5000);
+            iconLogOut.check(matches(isDisplayed()));
+            iconLogOut.perform(click());
+
+            waitingUtils.waiting(1500);
+
+            logOutTextView.check(matches(isDisplayed()));
+            logOutTextView.perform(click());
+
+            pageAuthorization.check(matches(isDisplayed()));
+        } catch (NoMatchingViewException | AssertionFailedError e) {
+            System.out.println("iconLogOut не найден. Пропустить.");
+        }
+    }
+
+    @Step("Вводим логин: {0}")
+    private void enterLogin(String login) {
         loginTextInput.check(matches(isDisplayed()));
         loginTextInput.perform(click());
-        loginTextInput.perform(replaceText(login));
+        loginTextInput.perform(replaceText(login), closeSoftKeyboard());
+    }
+
+    @Step("Вводим пароль: {0}")
+    private void enterPassword(String password) {
         passwordTextInput.check(matches(isDisplayed()));
         passwordTextInput.perform(click());
         passwordTextInput.perform(replaceText(password), closeSoftKeyboard());
-        enterButton.perform(click());
     }
 
-    public void logout() {
-        iconLogOut.check(matches(isDisplayed()));
-        iconLogOut.perform(click());
-
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        logOutTextView.check(matches(isDisplayed()));
-        logOutTextView.perform(click());
-
-        pageAuthorization.check(matches(isDisplayed()));
+    @Step("Нажимаем на кнопку 'Войти'")
+    private void clickSignInButton() {
+        enterButton.perform(click());
     }
 
     private static Matcher<View> childAtPosition(

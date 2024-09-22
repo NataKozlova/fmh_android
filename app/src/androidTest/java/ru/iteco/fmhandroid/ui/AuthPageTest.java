@@ -3,6 +3,7 @@ package ru.iteco.fmhandroid.ui;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
@@ -21,61 +22,68 @@ import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsInstanceOf;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.qameta.allure.android.runners.AllureAndroidJUnit4;
+import io.qameta.allure.kotlin.Story;
 import ru.iteco.fmhandroid.R;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(AllureAndroidJUnit4.class)
 public class AuthPageTest {
 
     WaitingUtils waitingUtils = new WaitingUtils();
     AuthUtils authUtils = new AuthUtils();
+
     @Rule
     public ActivityScenarioRule<AppActivity> activityScenarioRule =
             new ActivityScenarioRule<>(AppActivity.class);
 
+    private View decorView;
+
+    @Before
+    public void setUp() {
+        activityScenarioRule.getScenario()
+                .onActivity(activity -> decorView = activity.getWindow().getDecorView());
+    }
+
+    @After
+    public void reset() {
+        authUtils.logout();
+    }
+
     @Test
+    @Story("Отображение экрана авторизации")
     public void testMoveToAuthPage() throws Exception {
         waitingUtils.waitForView(withId(R.id.login_text_input_layout), 5000);
 
         onView(withId(R.id.login_text_input_layout))
                 .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
     }
+
     @Test
+    @Story("Авторизация с валидными значениями")
     public void testLoginWithValidCredentials() throws Exception {
-        waitingUtils.waitForView(withId(R.id.login_text_input_layout), 5000);
+        authUtils.login();
 
-        authUtils.login("login2", "password2");
+        waitingUtils.waiting(5000);
 
-        waitingUtils.waitForView(withId(R.id.trademark_image_view), 10000);
-
-        ViewInteraction imageView = onView(
-                allOf(withId(R.id.trademark_image_view),
-                        withParent(allOf(withId(R.id.container_custom_app_bar_include_on_fragment_main),
-                                withParent(IsInstanceOf.<View>instanceOf(android.widget.LinearLayout.class)))),
-                        isDisplayed()));
-        imageView.check(matches(isDisplayed()));
-
-        authUtils.logout();
+        onView(withId(R.id.trademark_image_view)).check(matches(isDisplayed()));
     }
 
     @Test
+    @Story("Авторизация с невалидными значениями")
     public void testLoginWithInvalidCredentials() throws Exception {
-        waitingUtils.waitForView(withId(R.id.login_text_input_layout), 5000);
-
         authUtils.login("invalid_username", "invalid_password");
 
-        waitingUtils.waitForView(withId(R.id.trademark_image_view), 10000);
-
-        ViewInteraction imageView = onView(
-                allOf(withId(R.id.trademark_image_view),
-                        withParent(allOf(withId(R.id.container_custom_app_bar_include_on_fragment_main),
-                                withParent(IsInstanceOf.<View>instanceOf(android.widget.LinearLayout.class)))),
-                        isDisplayed()));
-        imageView.check(matches(not(isDisplayed())));
+        onView(withText("Something went wrong. Try again later."))
+                .inRoot(withDecorView(Matchers.not(decorView)))
+                .check(matches(isDisplayed()));
     }
 
 

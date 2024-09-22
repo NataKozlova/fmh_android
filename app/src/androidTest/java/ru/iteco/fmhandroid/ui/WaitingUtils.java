@@ -10,8 +10,20 @@ import org.hamcrest.Matcher;
 
 import java.util.concurrent.TimeoutException;
 
+import io.qameta.allure.kotlin.Step;
+
 public class WaitingUtils {
 
+    @Step("Ждем загрузки")
+    public void waiting(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Step("Ждем загрузки")
     public void waitForView(final Matcher<View> viewMatcher, final int timeout) throws Exception {
         long endTime = System.currentTimeMillis() + timeout;
         while (System.currentTimeMillis() < endTime) {
